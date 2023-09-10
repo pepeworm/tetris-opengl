@@ -1,9 +1,10 @@
 #include "board.hpp"
 #include <filesystem>
 
-BoardData::BoardData() {}
+Board::Board(Renderer* renderer, float tPadding, float bPadding) {
+	this->renderer = renderer;
+	this->data->gameData.resize(this->data->height, std::vector<Square*>(this->data->width, new Square()));
 
-Board::Board(float tPadding, float bPadding, Renderer* renderer) : renderer(renderer) {
 	// Fill in positions array
 
 	this->data->tPos = 1.0f - tPadding; // Top-most position
@@ -40,19 +41,17 @@ Board::Board(float tPadding, float bPadding, Renderer* renderer) : renderer(rend
 
 	// Initialize shader program, VAO, VBO and IBO
 
-	float* vertexData = &this->vertexDataVector[0];
-	unsigned int* indices = &this->indicesVector[0];
-
 	this->program = new Shader();
 	program->createShader(
-		(std::filesystem::current_path() / "shader/src/board/shader.vs").c_str(), (std::filesystem::current_path() / "shader/src/board/shader.fs").c_str()
+		(std::filesystem::current_path() / "shader/src/container/shader.vs").c_str(),
+		(std::filesystem::current_path() / "shader/src/container/shader.fs").c_str()
 	);
 
 	this->vao = new VAO();
-	this->vbo = new VBO(vertexData, this->vertexDataVector.size() * sizeof(float), GL_STATIC_DRAW);
-	this->ibo = new IBO(indices, this->indicesVector.size(), GL_STATIC_DRAW);
+	this->vbo = new VBO(&this->vertexDataVector[0], this->vertexDataVector.size() * sizeof(float), GL_STATIC_DRAW);
+	this->ibo = new IBO(&this->indicesVector[0], this->indicesVector.size(), GL_STATIC_DRAW);
 
-	this->vbo->pushLayoutData(2, GL_FLOAT, GL_FALSE); // position attribute
+	this->vbo->pushLayoutData(2, GL_FLOAT, GL_FALSE);
 	this->vao->attachBuffer(this->vbo, this->ibo);
 
 	this->vao->unbind();
@@ -60,23 +59,4 @@ Board::Board(float tPadding, float bPadding, Renderer* renderer) : renderer(rend
 	this->ibo->unbind();
 
 	return;
-}
-
-Board::~Board() {
-	delete this->program;
-	delete this->vao;
-	delete this->vbo;
-	delete this->ibo;
-
-	return;
-}
-
-void Board::render() {
-	this->renderer->draw(this->program, this->vao, this->ibo, GL_LINES);
-
-	return;
-}
-
-BoardData* Board::getBoardData() {
-	return this->data;
 }

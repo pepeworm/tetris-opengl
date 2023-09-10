@@ -2,6 +2,7 @@
 #include <filesystem>
 
 Square::Square(float squareSize, float posX, float posY, Renderer* renderer) : squareSize(squareSize), renderer(renderer) {
+	this->placeholder = false;
 	this->program = new Shader();
 	program->createShader(
 		(std::filesystem::current_path() / "shader/src/square/shader.vs").c_str(), (std::filesystem::current_path() / "shader/src/square/shader.fs").c_str()
@@ -21,9 +22,18 @@ Square::~Square() {
 	return;
 }
 
-void Square::render(float red, float green, float blue, float alpha) {
+void Square::setColor(float red, float green, float blue, float alpha) {
+	this->red = red;
+	this->green = green;
+	this->blue = blue;
+	this->alpha = alpha;
+
+	return;
+}
+
+void Square::render() {
 	this->renderer->draw(this->program, this->vao, this->ibo, GL_TRIANGLES);
-	program->set4Float("rgba", red, green, blue, alpha);
+	program->set4Float("rgba", this->red, this->green, this->blue, this->alpha);
 
 	return;
 }
@@ -50,4 +60,4 @@ void Square::updatePos(float posX, float posY) {
 	this->ibo->unbind();
 
 	return;
-};
+}

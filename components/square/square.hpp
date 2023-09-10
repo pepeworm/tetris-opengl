@@ -10,6 +10,10 @@
 class Square {
 private:
 	float squareSize;
+	float red;
+	float green;
+	float blue;
+	float alpha;
 
 	unsigned int indices[6] = {0, 1, 2, 2, 3, 0};
 
@@ -22,7 +26,13 @@ private:
 
 public:
 	float vertexData[8];
-	
+	bool placeholder = true; // If the square is a placeholder or not
+
+	/**
+	 * @brief Create a placeholder square
+	 */
+	Square(){};
+
 	/**
 	 * @brief Sets up the data necessary to render a square
 	 * @param squareSize The size of the square (should be equal to the square sizes on the game board)
@@ -34,13 +44,18 @@ public:
 	~Square();
 
 	/**
-	 * @brief Render the square
+	 * @brief Set the color of the square
 	 * @param red The red value for the color of the square
 	 * @param green The green value for the color of the square
 	 * @param blue The blue value for the color of the square
 	 * @param alpha The alpha value for the color of the square
 	 */
-	void render(float red, float green, float blue, float alpha);
+	void setColor(float red, float green, float blue, float alpha);
+
+	/**
+	 * @brief Render the square
+	 */
+	void render();
 
 	/**
 	 * @brief Update the square's position and the buffers (VAO, VBO, etc.)

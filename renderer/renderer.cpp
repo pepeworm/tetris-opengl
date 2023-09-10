@@ -25,10 +25,6 @@ bool glLogCall(const char* function, const char* file, int line) {
 	return true;
 }
 
-Renderer::Renderer() {}
-
-Renderer::~Renderer() {}
-
 void Renderer::draw(Shader* shader, VAO* vao, IBO* ibo, unsigned int primitiveType) {
 	vao->bind();
 	ibo->bind();

@@ -1,11 +1,5 @@
-#include "components/board/board.hpp"
+#include "game/game.hpp"
 #include "glad.h"
-#include "ibo/ibo.hpp"
-#include "inputHandler/inputHandler.hpp"
-#include "renderer/renderer.hpp"
-#include "shader/shader.hpp"
-#include "vao/vao.hpp"
-#include "vbo/vbo.hpp"
 #include <GLFW/glfw3.h>
 #include <filesystem>
 #include <iostream>
@@ -39,43 +33,12 @@ int main() {
 
 	glViewport(0, 0, 800, 800);
 
-	Renderer* renderer = new Renderer();
-
-	Board* gameBoard = new Board(0.3f, 0.2f, renderer);
-	BoardData* boardData = gameBoard->getBoardData();
-
-	InputHandler* inputHandler = new InputHandler(window, renderer, boardData);
+	Game* game = new Game(window);
 
 	// Rendering Loop
 
-	double previousTime = glfwGetTime();
-	unsigned int frameCount = 0;
-
 	while (!glfwWindowShouldClose(window)) {
-		double currentTime = glfwGetTime();
-		frameCount++;
-
-		if (currentTime - previousTime >= 0.5) {
-			// Display the frame count here any way you want.
-			std::cout << frameCount << '\n';
-
-			frameCount = 0;
-			previousTime = currentTime;
-
-			inputHandler->DELETETHIS();
-		}
-
-		renderer->clearScreen();
-		renderer->enableBlend();
-		renderer->fillScreen(0.06f, 0.11f, 0.14f, 1.0f);
-
-		// Handle input
-
-		inputHandler->detect();
-
-		// Draw elements
-
-		gameBoard->render();
+		game->gameLoop();
 
 		// Swap buffers and poll for events
 
@@ -83,6 +46,8 @@ int main() {
 		glfwPollEvents();
 	}
 
+	delete game;
+	
 	glfwTerminate();
 
 	return 0;

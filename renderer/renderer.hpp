@@ -24,8 +24,7 @@ public:
 	/**
 	 * @brief Create a renderer instance
 	 */
-	Renderer();
-	~Renderer();
+	Renderer(){};
 
 	/**
 	 * @brief Draw onto the screen
