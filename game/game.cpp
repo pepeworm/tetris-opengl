@@ -72,24 +72,6 @@ void Game::placeActivePiece() {
 	return;
 }
 
-void Game::renderHoldPiece() {
-	if (this->holdPiece->hidden) {
-		return;
-	}
-
-	float pieceHeight = this->holdPiece->pieceHeight * this->boardData->squareSize;
-	float pieceWidth = this->holdPiece->pieceWidth * this->boardData->squareSize;
-
-	float containerHeight = this->holdPieceContainer->data->tPos - this->holdPieceContainer->data->bPos;
-	float containerWidth = this->holdPieceContainer->data->rPos - this->holdPieceContainer->data->lPos;
-	float startX = this->holdPieceContainer->data->lPos + (containerWidth - pieceWidth) / 2;
-	float startY = this->holdPieceContainer->data->tPos - (containerHeight - pieceHeight) / 2;
-
-	this->holdPiece->updatePos(startX, startY);
-
-	return;
-}
-
 void Game::renderPlayedPieces() {
 	for (auto& r : this->boardData->gameData) {
 		for (auto& c : r) {
@@ -158,25 +140,18 @@ void Game::clearRows() {
 	return;
 }
 
-void Game::initActivePiece() {
-	float startX = this->boardData->lPos + this->boardData->squareSize * ((this->boardData->width - activePiece->pieceWidth) / 2);
-	activePiece->updatePos(startX, this->boardData->tPos - 2 * this->boardData->squareSize);
-
-	return;
-}
-
 Game::Game(GLFWwindow* window) : window(window) {
 	this->renderer = new Renderer();
-	this->inputHandler = new InputHandler(this);
+	this->inputHandler = new InputHandler(window, this->placePiece, this->fallInterval);
 
-	this->gameBoard = new Board(renderer, 0.2f, 0.2f);
+	this->gameBoard = new Board(renderer, 0.1f, 0.1f);
 	this->boardData = gameBoard->data;
 
 	this->gameTimer = new GameTimer();
 
 	// Get co-ordinates for the "next piece"
 
-	float containerWidth = (1.0f - this->boardData->rPos) * 0.6;
+	float containerWidth = (1.0f - this->boardData->rPos) * 0.7;
 	float containerHeight = (this->boardData->tPos - this->boardData->bPos) * 0.5;
 	float containerPadding = (1.0f - containerWidth - this->boardData->rPos) / 2;
 
@@ -198,11 +173,10 @@ Game::Game(GLFWwindow* window) : window(window) {
 
 	this->holdPieceContainer = new Container(renderer, containerStartX, containerStartY, containerEndX, containerEndY);
 
-	// Generate the next pieces and set the current active piece & placeholder hold piece
+	// Generate the next pieces and set the current active piece
 
 	this->genNextPieces(3);
 	this->activePiece = this->getActivePiece();
-	this->holdPiece->hidden = true;
 
 	// Begin game timer
 
@@ -255,7 +229,6 @@ void Game::gameLoop() {
 
 				this->activePiece = this->getActivePiece();
 				this->placePiece = false;
-				this->inputHandler->setHoldStatus(true);
 			} else {
 				this->placePiece = true;
 			}
@@ -271,9 +244,14 @@ Tetromino* Game::getActivePiece() {
 	Tetromino* activePiece = this->nextPieces.front();
 	this->nextPieces.pop_front();
 
+	// Set the new piece as the input handler active piece
+
+	this->inputHandler->setActivePiece(activePiece);
+
 	// Move active piece onto the game board
 
-	this->initActivePiece();
+	float startX = this->boardData->lPos + this->boardData->squareSize * ((this->boardData->width - activePiece->pieceWidth) / 2);
+	activePiece->updatePos(startX, this->boardData->tPos - 2 * this->boardData->squareSize);
 
 	// Fill in new piece in the next pieces
 

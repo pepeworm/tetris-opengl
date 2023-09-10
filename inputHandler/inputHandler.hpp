@@ -8,14 +8,13 @@
 #include "../components/tetromino/pieces/sPiece/sPiece.hpp"
 #include "../components/tetromino/pieces/tPiece/tPiece.hpp"
 #include "../components/tetromino/pieces/zPiece/zPiece.hpp"
-#include "../game/game.hpp"
 #include "../renderer/renderer.hpp"
 #include "glad.h"
 #include <GLFW/glfw3.h>
 
 class InputHandler {
 private:
-	Game* game;
+	GLFWwindow* window;
 
 	bool key_right_status = false;
 	bool key_left_status = false;
@@ -25,7 +24,9 @@ private:
 	bool key_space_status = false;
 	bool key_c_status = false;
 
-	bool holdStatus = true; // True if hold piece is available to use
+	Tetromino* activePiece;
+	bool& placePiece;
+	double& fallInterval;
 
 	/**
 	 * @brief Handle the right arrow key input
@@ -60,15 +61,17 @@ private:
 public:
 	/**
 	 * @brief Setup input handler
-	 * @param game The current game
+	 * @param window The GLFW window object
+	 * @param placePiece A reference to the placePiece in game.cpp
+	 * @param fallInterval A reference to the fallInterval in game.cpp
 	 */
-	InputHandler(Game* game) : game(game){};
+	InputHandler(GLFWwindow* window, bool& placePiece, double& fallInterval) : window(window), placePiece(placePiece), fallInterval(fallInterval){};
 
 	/**
-	 * @brief Set the hold piece status
-	 * @param status The new status
+	 * @brief Set the current active game piece to transform according to the appropriate keyboard inputs
+	 * @param activePiece The current active game piece
 	 */
-	void setHoldStatus(bool status);
+	void setActivePiece(Tetromino* activePiece);
 
 	/**
 	 * @brief Begin detecting input events

@@ -71,18 +71,13 @@ private:
 	 */
 	void clearRows();
 
-	/**
-	 * @brief Initialize the new active piece's initial position
-	 */
-	void initActivePiece();
-
 public:
 	bool placePiece = false;
 	double fallInterval = 0.5; // Falling speed in seconds
 
 	GLFWwindow* window;
 	Tetromino* activePiece;
-	Tetromino* holdPiece = new Tetromino();
+	Tetromino* holdPiece;
 
 	Game(GLFWwindow* window);
 	~Game();

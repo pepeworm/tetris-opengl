@@ -137,17 +137,17 @@ bool Tetromino::rotate(bool clockwise) {
 
 	if (clockwise) {
 		for (int i = 0; i < 4; i++) {
-			float temp = rotatePos[i * 2 + 1] - this->centerY + this->centerX;
+			float tmp = rotatePos[i * 2 + 1] - this->centerY + this->centerX;
 
 			rotatePos[i * 2 + 1] = -rotatePos[i * 2] + this->centerX + this->centerY;
-			rotatePos[i * 2] = temp - this->boardData->squareSize;
+			rotatePos[i * 2] = tmp - this->boardData->squareSize;
 		}
 	} else {
 		for (int i = 0; i < 4; i++) {
-			float temp = rotatePos[i * 2] - this->centerX + this->centerY;
+			float tmp = rotatePos[i * 2] - this->centerX + this->centerY;
 
 			rotatePos[i * 2] = -rotatePos[i * 2 + 1] + this->centerY + this->centerX;
-			rotatePos[i * 2 + 1] = temp + this->boardData->squareSize;
+			rotatePos[i * 2 + 1] = tmp + this->boardData->squareSize;
 		}
 	}
 
