@@ -1,6 +1,74 @@
 #include "board.hpp"
 #include <filesystem>
 
+void BoardData::renderPlayedPieces() {
+	for (auto& r : this->gameData) {
+		for (auto& c : r) {
+			if (!c->placeholder) {
+				c->render();
+			}
+		}
+	}
+
+	return;
+}
+
+void BoardData::clearRows() {
+	unsigned int startRow = -1; // First complete row
+	unsigned int rowCnt = 0; // Total number of rows to clear
+
+	// Get rows to clear
+
+	for (int r = 0; r < this->height; r++) {
+		bool validRow = true; // Whether a row can be cleared
+
+		for (int c = 0; c < this->width; c++) {
+			if (this->gameData[r][c]->placeholder) {
+				validRow = false;
+
+				break;
+			}
+		}
+
+		if (validRow) {
+			if (startRow == -1) {
+				startRow = r;
+			}
+
+			rowCnt++;
+		}
+	}
+
+	// Clear the rows
+
+	for (int r = startRow; r < startRow + rowCnt; r++) {
+		for (int c = 0; c < this->width; c++) {
+			delete this->gameData[r][c];
+
+			this->gameData[r][c] = new Square();
+		}
+	}
+
+	// Move all rows above rowCnt rows down
+
+	for (int r = startRow - 1; r >= 0; r--) {
+		for (int c = 0; c < this->width; c++) {
+			if (this->gameData[r][c]->placeholder) {
+				continue;
+			}
+
+			float xPos = this->gameData[r][c]->vertexData[0];
+			float yPos = this->gameData[r][c]->vertexData[1];
+
+			this->gameData[r][c]->updatePos(xPos, yPos - rowCnt * this->squareSize);
+			this->gameData[r + rowCnt][c] = this->gameData[r][c];
+			this->gameData[r][c] = new Square();
+		}
+	}
+
+	return;
+}
+
 Board::Board(Renderer* renderer, float tPadding, float bPadding) {
 	this->renderer = renderer;
 	this->data->gameData.resize(this->data->height, std::vector<Square*>(this->data->width, new Square()));

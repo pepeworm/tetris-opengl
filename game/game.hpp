@@ -10,38 +10,31 @@
 #include "../components/tetromino/pieces/zPiece/zPiece.hpp"
 #include "../inputHandler/inputHandler.hpp"
 #include "../renderer/renderer.hpp"
+#include "gameFlags/gameFlags.hpp"
+#include "gameTimer/gameTimer.hpp"
 #include "glad.h"
 #include <deque>
 #include <vector>
 
-class GameTimer {
-private:
-	double prevTime; // The previous time recorded
-
-public:
-	GameTimer(){};
-
-	/**
-	 * @brief Start the timer
-	 */
-	void start();
-
-	/**
-	 * @brief Get time elapsed between the present time and when the timer was started
-	 * @returns The time elapsed
-	 */
-	double getElapsedTime();
-};
-
 class Game {
 private:
+	GLFWwindow* window;
 	Renderer* renderer;
 	Board* gameBoard;
 	BoardData* boardData;
-	GameTimer *gameTimer, pieceTimer;
+	GameTimer* gameTimer;
+	GameFlags* gameFlags;
 	InputHandler* inputHandler;
+
 	Container* nextPieceContainer;
 	Container* holdPieceContainer;
+
+	Tetromino* activePiece;
+	Tetromino* holdPiece = new Tetromino();
+
+	bool placePiece = false;
+	bool canHoldStatus = true; // Whether the active piece can be currently held
+	double fallInterval = 0.5; // Falling speed in seconds
 
 	std::vector<char> validPieces = {'i', 'j', 'l', 'o', 's', 't', 'z'};
 	std::deque<Tetromino*> nextPieces;
@@ -57,28 +50,22 @@ private:
 	void placeActivePiece();
 
 	/**
-	 * @brief Render the currently held piece, if available
+	 * @brief Get a new hold piece
 	 */
-	void renderHoldPiece();
+	void getHoldPiece();
 
 	/**
-	 * @brief Renders the played pieces in the game data
+	 * @brief Detect changes in the game flags and handle them accordingly
 	 */
-	void renderPlayedPieces();
+	void handleGameFlags();
 
 	/**
-	 * @brief Check and clear rows if possible
+	 * @brief Get a new active piece
+	 * @returns A new Tetromino
 	 */
-	void clearRows();
+	Tetromino* getActivePiece();
 
 public:
-	bool placePiece = false;
-	double fallInterval = 0.5; // Falling speed in seconds
-
-	GLFWwindow* window;
-	Tetromino* activePiece;
-	Tetromino* holdPiece;
-
 	Game(GLFWwindow* window);
 	~Game();
 
@@ -86,10 +73,4 @@ public:
 	 * @brief Run game loop
 	 */
 	void gameLoop();
-
-	/**
-	 * @brief Get a new active piece
-	 * @returns A new Tetromino
-	 */
-	Tetromino* getActivePiece();
 };

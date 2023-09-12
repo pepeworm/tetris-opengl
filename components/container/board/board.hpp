@@ -14,6 +14,16 @@ public:
 	std::vector<std::vector<Square*>> gameData;
 
 	BoardData(){};
+
+	/**
+	 * @brief Renders the played pieces in the game data
+	 */
+	void renderPlayedPieces();
+
+	/**
+	 * @brief Checking if rows can be cleared and clear if possible
+	 */
+	void clearRows();
 };
 
 class Board : public Container {

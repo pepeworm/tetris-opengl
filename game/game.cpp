@@ -2,16 +2,6 @@
 #include <algorithm>
 #include <random>
 
-void GameTimer::start() {
-	this->prevTime = glfwGetTime();
-
-	return;
-}
-
-double GameTimer::getElapsedTime() {
-	return glfwGetTime() - prevTime;
-}
-
 void Game::genNextPieces(unsigned int elems) {
 	std::vector<char> temp;
 	std::sample(this->validPieces.begin(), this->validPieces.end(), std::back_inserter(temp), elems, std::mt19937{std::random_device{}()});
@@ -72,79 +62,101 @@ void Game::placeActivePiece() {
 	return;
 }
 
-void Game::renderPlayedPieces() {
-	for (auto& r : this->boardData->gameData) {
-		for (auto& c : r) {
-			if (!c->placeholder) {
-				c->render();
-			}
-		}
+void Game::getHoldPiece() {
+	if (!this->canHoldStatus) {
+		return;
+	}
+
+	if (this->holdPiece->hidden) {
+		// Hold piece not previously set
+
+		this->holdPiece = this->activePiece;
+		this->activePiece = this->getActivePiece();
+	} else {
+		// Hold piece exists
+
+		std::swap(this->activePiece, this->holdPiece);
+
+		float startX = this->boardData->lPos + this->boardData->squareSize * ((this->boardData->width - this->activePiece->pieceWidth) / 2);
+		float startY = this->boardData->tPos - 2 * this->boardData->squareSize;
+
+		this->activePiece->updatePos(startX, startY);
+	}
+
+	this->canHoldStatus = false;
+
+	float containerHeight = this->holdPieceContainer->data->tPos - this->holdPieceContainer->data->bPos;
+	float containerWidth = this->holdPieceContainer->data->rPos - this->holdPieceContainer->data->lPos;
+	float pieceXPadding = (containerWidth - this->boardData->squareSize * this->holdPiece->pieceWidth) / 2;
+	float pieceYPadding =
+		(containerHeight - this->boardData->squareSize * this->holdPiece->pieceHeight) / 2 + this->boardData->squareSize * this->holdPiece->pieceHeight;
+
+	float startX = this->holdPieceContainer->data->lPos + pieceXPadding;
+	float startY = this->holdPieceContainer->data->tPos - pieceYPadding;
+
+	this->holdPiece->updatePos(startX, startY);
+
+	return;
+}
+
+void Game::handleGameFlags() {
+	if (this->gameFlags->rotateStatus) {
+		this->activePiece->rotate(this->gameFlags->rotateStatus + 1);
+		this->gameFlags->rotateStatus = 0;
+	}
+
+	if (this->gameFlags->translateXStatus) {
+		this->activePiece->translateX(this->gameFlags->translateXStatus);
+		this->gameFlags->translateXStatus = 0;
+	}
+
+	if (this->gameFlags->dropStatus) {
+		this->activePiece->drop();
+		this->gameFlags->dropStatus = false;
+	}
+
+	if (this->gameFlags->softDropStatus) {
+		this->fallInterval = 0.05;
+		this->gameFlags->softDropStatus = false;
+	} else {
+		this->fallInterval = 0.5;
+	}
+
+	if (this->gameFlags->holdStatus) {
+		this->getHoldPiece();
+		this->gameFlags->holdStatus = false;
 	}
 
 	return;
 }
 
-void Game::clearRows() {
-	unsigned int startRow = -1; // First complete row
-	unsigned int rowCnt = 0; // Total number of rows to clear
+Tetromino* Game::getActivePiece() {
+	Tetromino* activePiece = this->nextPieces.front();
+	this->nextPieces.pop_front();
 
-	// Get rows to clear
+	// Move active piece onto the game board
 
-	for (int r = 0; r < this->boardData->height; r++) {
-		bool validRow = true; // Whether a row can be cleared
+	float startX = this->boardData->lPos + this->boardData->squareSize * ((this->boardData->width - activePiece->pieceWidth) / 2);
+	float startY = this->boardData->tPos - 2 * this->boardData->squareSize;
 
-		for (int c = 0; c < this->boardData->width; c++) {
-			if (this->boardData->gameData[r][c]->placeholder) {
-				validRow = false;
+	activePiece->updatePos(startX, startY);
 
-				break;
-			}
-		}
+	// Fill in new piece in the next pieces
 
-		if (validRow) {
-			if (startRow == -1) {
-				startRow = r;
-			}
+	this->genNextPieces(1);
 
-			rowCnt++;
-		}
-	}
-
-	// Clear the rows
-
-	for (int r = startRow; r < startRow + rowCnt; r++) {
-		for (int c = 0; c < this->boardData->width; c++) {
-			delete this->boardData->gameData[r][c];
-
-			this->boardData->gameData[r][c] = new Square();
-		}
-	}
-
-	// Move all rows above rowCnt rows down
-
-	for (int r = startRow - 1; r >= 0; r--) {
-		for (int c = 0; c < this->boardData->width; c++) {
-			if (this->boardData->gameData[r][c]->placeholder) {
-				continue;
-			}
-
-			float xPos = this->boardData->gameData[r][c]->vertexData[0];
-			float yPos = this->boardData->gameData[r][c]->vertexData[1];
-
-			this->boardData->gameData[r][c]->updatePos(xPos, yPos - rowCnt * this->boardData->squareSize);
-			this->boardData->gameData[r + rowCnt][c] = this->boardData->gameData[r][c];
-			this->boardData->gameData[r][c] = new Square();
-		}
-	}
-
-	return;
+	return activePiece;
 }
 
 Game::Game(GLFWwindow* window) : window(window) {
-	this->renderer = new Renderer();
-	this->inputHandler = new InputHandler(window, this->placePiece, this->fallInterval);
+	this->gameFlags = new GameFlags();
 
-	this->gameBoard = new Board(renderer, 0.1f, 0.1f);
+	this->renderer = new Renderer();
+	this->inputHandler = new InputHandler(window, this->gameFlags);
+
+	this->holdPiece->hidden = true;
+
+	this->gameBoard = new Board(renderer, 0.25f, 0.25f);
 	this->boardData = gameBoard->data;
 
 	this->gameTimer = new GameTimer();
@@ -202,10 +214,15 @@ void Game::gameLoop() {
 	// Handle input
 
 	this->inputHandler->detect();
+	this->handleGameFlags();
 
 	// Draw elements
 
-	this->renderPlayedPieces();
+	if (!this->holdPiece->hidden) {
+		this->holdPiece->render(this->holdPiece->pieceType);
+	}
+
+	this->boardData->renderPlayedPieces();
 	this->activePiece->render(this->activePiece->pieceType);
 	this->nextPieceContainer->render();
 	this->holdPieceContainer->render();
@@ -225,37 +242,20 @@ void Game::gameLoop() {
 
 			if (this->placePiece) {
 				this->placeActivePiece();
-				this->clearRows();
+				this->boardData->clearRows();
 
 				this->activePiece = this->getActivePiece();
+				this->fallInterval = 0.5;
 				this->placePiece = false;
 			} else {
 				this->placePiece = true;
 			}
+
+			this->canHoldStatus = true;
 		}
 
 		this->gameTimer->start();
 	}
 
 	return;
-}
-
-Tetromino* Game::getActivePiece() {
-	Tetromino* activePiece = this->nextPieces.front();
-	this->nextPieces.pop_front();
-
-	// Set the new piece as the input handler active piece
-
-	this->inputHandler->setActivePiece(activePiece);
-
-	// Move active piece onto the game board
-
-	float startX = this->boardData->lPos + this->boardData->squareSize * ((this->boardData->width - activePiece->pieceWidth) / 2);
-	activePiece->updatePos(startX, this->boardData->tPos - 2 * this->boardData->squareSize);
-
-	// Fill in new piece in the next pieces
-
-	this->genNextPieces(1);
-
-	return activePiece;
 }
