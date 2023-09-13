@@ -38,14 +38,17 @@ void Game::genNextPieces(unsigned int elems) {
 
 	float containerHeight = this->nextPieceContainer->data->tPos - this->nextPieceContainer->data->bPos;
 	float containerWidth = this->nextPieceContainer->data->rPos - this->nextPieceContainer->data->lPos;
-	float piecePadding = (containerHeight - totalPiecesHeight) / 3;
+	float piecePadding = (containerHeight - totalPiecesHeight) / 4;
+	
 	float startY = this->nextPieceContainer->data->tPos - piecePadding;
 
 	for (auto& nextPiece : this->nextPieces) {
+		startY -= this->boardData->squareSize * nextPiece->pieceHeight;
+
 		float startX = this->nextPieceContainer->data->lPos + (containerWidth - this->boardData->squareSize * nextPiece->pieceWidth) / 2;
 		nextPiece->updatePos(startX, startY);
 
-		startY -= this->boardData->squareSize * nextPiece->pieceHeight + piecePadding;
+		startY -= piecePadding;
 	}
 
 	return;
