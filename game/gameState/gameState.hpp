@@ -17,9 +17,8 @@
 #include <deque>
 #include <vector>
 
-class GameStates {
+class GameState {
 public:
-	InputHandler* inputHandler;
 	Audio* audio;
 	Board* gameBoard;
 	BoardData* boardData;
@@ -41,5 +40,26 @@ public:
 	std::vector<char> validPieces = {'i', 'j', 'l', 'o', 's', 't', 'z'};
 	std::deque<Tetromino*> nextPieces;
 
-	GameStates();
+	GameState();
+
+	/**
+	 * @brief Detect changes in the game flags and handle them accordingly
+	 */
+	void handleGameFlags();
+
+	/**
+	 * @brief Generate new next Tetromino pieces and push it into the pieces queue
+	 */
+	void genNextPieces(unsigned int elems);
+
+	/**
+	 * @brief Get a new hold piece
+	 */
+	void getHoldPiece();
+
+	/**
+	 * @brief Get a new active piece
+	 * @returns A new Tetromino
+	 */
+	Tetromino* getActivePiece();
 };
