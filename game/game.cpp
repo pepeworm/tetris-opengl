@@ -39,7 +39,7 @@ void Game::genNextPieces(unsigned int elems) {
 	float containerHeight = this->nextPieceContainer->data->tPos - this->nextPieceContainer->data->bPos;
 	float containerWidth = this->nextPieceContainer->data->rPos - this->nextPieceContainer->data->lPos;
 	float piecePadding = (containerHeight - totalPiecesHeight) / 4;
-	
+
 	float startY = this->nextPieceContainer->data->tPos - piecePadding;
 
 	for (auto& nextPiece : this->nextPieces) {
@@ -113,8 +113,15 @@ void Game::handleGameFlags() {
 		this->gameFlags->translateXStatus = 0;
 	}
 
+	if (this->gameFlags->pauseStatus) {
+		this->pauseGame = true;
+	} else {
+		this->pauseGame = false;
+	}
+
 	if (this->gameFlags->dropStatus) {
 		this->activePiece->drop();
+		this->placePiece = true;
 		this->gameFlags->dropStatus = false;
 	}
 
@@ -152,17 +159,14 @@ Tetromino* Game::getActivePiece() {
 }
 
 Game::Game(GLFWwindow* window) : window(window) {
-	this->gameFlags = new GameFlags();
-
-	this->renderer = new Renderer();
 	this->inputHandler = new InputHandler(window, this->gameFlags);
-
-	this->holdPiece->hidden = true;
-
-	this->gameBoard = new Board(renderer, 0.25f, 0.25f);
-	this->boardData = gameBoard->data;
-
+	this->audio = new Audio("audio/media/domination.wav");
+	this->gameBoard = new Board(this->renderer, 0.25f, 0.25f);
 	this->gameTimer = new GameTimer();
+
+	this->boardData = gameBoard->data;
+	this->holdPiece->hidden = true;
+	this->audio->play();
 
 	// Get co-ordinates for the "next piece"
 
@@ -210,14 +214,25 @@ Game::~Game() {
 }
 
 void Game::gameLoop() {
+	// Prepare screen
+
 	this->renderer->clearScreen();
 	this->renderer->enableBlend();
 	this->renderer->fillScreen(0.06f, 0.11f, 0.14f, 1.0f);
 
 	// Handle input
 
-	this->inputHandler->detect();
+	if (!this->placePiece) {
+		this->inputHandler->detect();
+	}
+
 	this->handleGameFlags();
+
+	// Check for a top out
+
+	if (this->boardData->checkTopOut()) {
+		// TODO restart the game
+	}
 
 	// Draw elements
 
@@ -237,9 +252,15 @@ void Game::gameLoop() {
 		nextPiece->render(nextPiece->pieceType);
 	}
 
+	// Check if the game is paused
+
+	if (this->pauseGame) {
+		return;
+	}
+
 	// Active piece logic
 
-	if (this->gameTimer->getElapsedTime() >= this->fallInterval) {
+	if (this->fallInterval && this->gameTimer->getElapsedTime() >= this->fallInterval) {
 		if (!this->activePiece->translateY()) {
 			// Give the active piece 1 more cycle of time to transform before placing it down
 

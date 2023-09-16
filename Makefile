@@ -5,6 +5,7 @@ CXXFLAGS:=${CXXFLAGS} -Wall -Wextra -Wpedantic -fno-trapping-math -fno-math-errn
 SRCS=$(shell find . | grep \\.cpp$)
 HDRS=$(shell find . | grep \\.hpp$)
 OBJS=$(SRCS:.cpp=.cpp.o)
+OPTS=-L"/usr/lib" include/audio/libIrrKlang.so -pthread
 
 .PHONY: debug release clean
 
@@ -17,7 +18,7 @@ release: a.out
 	strip -s a.out
 
 a.out: $(OBJS) include/glad.c
-	$(CXX) $(OBJS) include/glad.c $(CXXFLAGS) $(LIBS)
+	$(CXX) $(OBJS) include/glad.c $(CXXFLAGS) $(LIBS) $(OPTS)
 
 %.cpp.o: %.cpp $(HDRS) Makefile
 	$(CXX) -c $< -o $@ $(CXXFLAGS) $(INCLUDE)

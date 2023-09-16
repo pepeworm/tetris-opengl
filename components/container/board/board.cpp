@@ -69,6 +69,16 @@ void BoardData::clearRows() {
 	return;
 }
 
+bool BoardData::checkTopOut() {
+	for (auto& c : this->gameData[2]) { // New active pieces spawn at row 2 in game data
+		if (!c->placeholder) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 Board::Board(Renderer* renderer, float tPadding, float bPadding) {
 	this->renderer = renderer;
 	this->data->gameData.resize(this->data->height, std::vector<Square*>(this->data->width, new Square()));

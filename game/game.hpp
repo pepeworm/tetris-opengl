@@ -10,6 +10,7 @@
 #include "../components/tetromino/pieces/zPiece/zPiece.hpp"
 #include "../inputHandler/inputHandler.hpp"
 #include "../renderer/renderer.hpp"
+#include "../audio/audio.hpp"
 #include "gameFlags/gameFlags.hpp"
 #include "gameTimer/gameTimer.hpp"
 #include "glad.h"
@@ -19,20 +20,22 @@
 class Game {
 private:
 	GLFWwindow* window;
-	Renderer* renderer;
+	InputHandler* inputHandler;
+	Audio* audio;
 	Board* gameBoard;
 	BoardData* boardData;
-	GameTimer* gameTimer;
-	GameFlags* gameFlags;
-	InputHandler* inputHandler;
-
 	Container* nextPieceContainer;
 	Container* holdPieceContainer;
+
+	Renderer* renderer = new Renderer();
+	GameTimer* gameTimer = new GameTimer();
+	GameFlags* gameFlags = new GameFlags();
 
 	Tetromino* activePiece;
 	Tetromino* holdPiece = new Tetromino();
 
 	bool placePiece = false;
+	bool pauseGame = false;
 	bool canHoldStatus = true; // Whether the active piece can be currently held
 	double fallInterval = 0.5; // Falling speed in seconds
 

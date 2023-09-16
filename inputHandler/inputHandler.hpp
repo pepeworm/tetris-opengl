@@ -10,8 +10,8 @@ private:
 	GLFWwindow* window;
 	GameFlags* gameFlags;
 
-	std::vector<bool> keyStatus; // Use key codes to access values
-	std::vector<unsigned int> validKeys = {GLFW_KEY_RIGHT, GLFW_KEY_LEFT, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_Z, GLFW_KEY_SPACE, GLFW_KEY_C};
+	std::vector<bool> keyPressedStatus; // Use key codes to access values
+	std::vector<unsigned int> validKeys = {GLFW_KEY_RIGHT, GLFW_KEY_LEFT, GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_Z, GLFW_KEY_SPACE, GLFW_KEY_C, GLFW_KEY_ESCAPE};
 
 public:
 	/**

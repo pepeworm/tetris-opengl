@@ -24,6 +24,12 @@ public:
 	 * @brief Checking if rows can be cleared and clear if possible
 	 */
 	void clearRows();
+
+	/**
+	 * @brief Check if the next active Tetromino will be a top out
+	 * @returns Whether the next piece placed will result in a top out
+	 */
+	bool checkTopOut();
 };
 
 class Board : public Container {
