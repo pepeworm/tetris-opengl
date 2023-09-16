@@ -41,6 +41,7 @@ public:
 	std::deque<Tetromino*> nextPieces;
 
 	GameState();
+	~GameState();
 
 	/**
 	 * @brief Detect changes in the game flags and handle them accordingly

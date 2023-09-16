@@ -14,19 +14,11 @@ void Game::placeActivePiece() {
 Game::Game(GLFWwindow* window) : window(window) {
 	this->inputHandler = new InputHandler(window, this->gameState->gameFlags);
 
-	// Generate the next pieces and set the current active piece
-
-	this->gameState->genNextPieces(3);
-	this->gameState->activePiece = this->gameState->getActivePiece();
-
 	return;
 }
 
 Game::~Game() {
-	delete this->gameState->gameBoard;
-	delete this->gameState->nextPieceContainer;
-	delete this->gameState->holdPieceContainer;
-	delete this->gameState->activePiece;
+	delete this->gameState;
 
 	return;
 }
@@ -50,16 +42,11 @@ void Game::gameLoop() {
 
 	if (this->gameState->boardData->checkTopOut()) {
 		this->gameState->audio->stop();
-		
+
 		delete this->gameState;
 		this->gameState = new GameState();
-
+		
 		this->inputHandler = new InputHandler(this->window, this->gameState->gameFlags);
-
-		// Generate the next pieces and set the current active piece
-
-		this->gameState->genNextPieces(3);
-		this->gameState->activePiece = this->gameState->getActivePiece();
 
 		return;
 	}

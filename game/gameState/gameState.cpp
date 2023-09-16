@@ -35,9 +35,23 @@ GameState::GameState() {
 
 	this->holdPieceContainer = new Container(renderer, containerStartX, containerStartY, containerEndX, containerEndY);
 
+	// Generate the next pieces and set the current active piece
+
+	this->genNextPieces(3);
+	this->activePiece = this->getActivePiece();
+
 	// Begin game timer
 
 	this->gameTimer->start();
+
+	return;
+}
+
+GameState::~GameState() {
+	delete this->gameBoard;
+	delete this->nextPieceContainer;
+	delete this->holdPieceContainer;
+	delete this->activePiece;
 
 	return;
 }
